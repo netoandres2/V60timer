@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>V60 Timer</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="V60 Timer">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-main: #050816;
+      --bg-card: #111827;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.18);
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at top, #1f2937, transparent 55%),
+        radial-gradient(circle at bottom, #0f172a, #020617);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      color: var(--text-main);
+    }
+    .app {
+      max-width: 480px;
+      width: 100%;
+      padding: 1.8rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+    .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+    }
+    h1 {
+      font-size: 1.45rem;
+      margin: 0;
+    }
+    .subtitle {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+      text-align: center;
+    }
+    .timer-card {
+      background: rgba(15,23,42,0.92);
+      border-radius: 1.6rem;
+      padding: 1.3rem 1.5rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    #timer {
+      font-size: 3.4rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-shadow: 0 0 16px rgba(34,197,94,0.35);
+    }
+    .buttons { display: flex; gap: 0.7rem; }
+    button {
+      font-size: 1rem;
+      padding: 0.7rem 1.5rem;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      transition: transform .1s;
+    }
+    button:active { transform: scale(0.96); }
+    #startStop { background: var(--accent); color: #022c22; }
+    #reset { background: #1f2937; color: var(--text-main); }
+    #message {
+      min-height: 1.4rem;
+      font-size: 0.95rem;
+      color: var(--accent);
+      text-align: center;
+    }
+    .steps-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    li {
+      background: rgba(15,23,42,0.9);
+      border-radius: 0.9rem;
+      padding: 0.6rem 0.85rem;
+      border: 1px solid rgba(148,163,184,0.25);
+      font-size: .86rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    li.done {
+      background: rgba(22,163,74,0.15);
+      border-color: rgba(34,197,94,0.7);
+      text-decoration: line-through;
+    }
+    li.current {
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .time-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .time {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .desc {
+      color: var(--text-main);
+      text-align: right;
+      flex: 1;
+    }
+    .note-line {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .footer-hint {
+      margin-top: 1rem;
+      font-size: .8rem;
+      text-align: center;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="icon"><span>☕️</span></div>
+      <div>
+        <h1>V60 Timer</h1>
+        <div class="subtitle">300 g · vertidos guiados con sonido</div>
+      </div>
+    </header>
+
+    <main class="timer-card">
+      <div id="timer">00:00</div>
+
+      <div class="buttons">
+        <button id="startStop">Iniciar</button>
+        <button id="reset">Reiniciar</button>
+      </div>
+
+      <div id="message"></div>
+
+      <section class="steps">
+        <div class="steps-title">Pasos del vertido:</div>
+        <ul id="steps"></ul>
+      </section>
+
+      <div style="text-align:center; font-size:0.85rem; color:#9ca3af; margin-top:10px;">
+        Café recomendado: <strong>6–7 g</strong> por cada <strong>100 ml</strong> de agua.
+      </div>
+    </main>
+
+    <div class="footer-hint">
+      Diseñado y creado por <strong>Netoandres</strong>
+    </div>
+  </div>
+
+<script>
+  const steps = [
+    { time: 0,   grams: "40 g",          note:"Bloom"},
+    { time: 45,  grams: "120 g (+80)",   note:"Segundo vertido"},
+    { time: 90,  grams: "180 g (+60)",   note:"Tercer vertido"},
+    { time: 135, grams: "240 g (+60)",   note:"Cuarto vertido"},
+    { time: 180, grams: "300 g (+60)",   note:"Finalizar"}
+  ];
+
+  const timerEl = document.getElementById("timer");
+  const startStopBtn = document.getElementById("startStop");
+  const resetBtn = document.getElementById("reset");
+  const stepsList = document.getElementById("steps");
+  const messageEl = document.getElementById("message");
+
+  steps.forEach((step, index) => {
+    const mm = String(Math.floor(step.time/60)).padStart(2,"0");
+    const ss = String(step.time%60).padStart(2,"0");
+    const li = document.createElement("li");
+    li.dataset.index = index;
+    li.innerHTML = `
+      <div class="time-row">
+        <span class="time">${mm}:${ss}</span>
+        <span class="desc">${step.grams}</span>
+      </div>
+      <div class="note-line">${step.note}</div>
+    `;
+    stepsList.appendChild(li);
+    step.element = li;
+  });
+
+  let running = false;
+  let startTime = null;
+  let elapsed = 0;
+  let intervalId = null;
+  let nextStepIndex = 0;
+  let audioCtx = null;
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+  }
+
+  function ensureAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  }
+
+  function beep() {
+    ensureAudio();
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+
+    const tone = (t,f)=> {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.frequency.value=f;
+      o.type="sine";
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(0.3,t+0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+0.18);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t+0.18);
+    };
+
+    tone(now,900);
+    tone(now+0.22,1300);
+  }
+
+  function checkSteps() {
+    if (nextStepIndex >= steps.length) return;
+    const st = steps[nextStepIndex];
+    if (elapsed >= st.time) {
+      st.element.classList.add("done");
+      st.element.classList.remove("current");
+      beep();
+      if (navigator.vibrate) navigator.vibrate([200,80,200]);
+      messageEl.textContent = st.grams + " – " + st.note;
+      setTimeout(()=>{ 
+        if(messageEl.textContent===st.grams+" – "+st.note) 
+          messageEl.textContent=""; 
+      },4000);
+      nextStepIndex++;
+      if (nextStepIndex < steps.length) steps[nextStepIndex].element.classList.add("current");
+    }
+  }
+
+  function updateTimer() {
+    elapsed = Math.floor((Date.now()-startTime)/1000);
+    timerEl.textContent = formatTime(elapsed);
+    checkSteps();
+  }
+
+  function startTimer() {
+    running = true;
+    startStopBtn.textContent = "Pausar";
+    startTime = Date.now() - elapsed*1000;
+    intervalId = setInterval(updateTimer,200);
+    ensureAudio();
+    steps[nextStepIndex].element.classList.add("current");
+  }
+
+  function stopTimer() {
+    running = false;
+    startStopBtn.textContent = "Reanudar";
+    clearInterval(intervalId);
+  }
+
+  function resetTimer() {
+    stopTimer();
+    elapsed = 0;
+    timerEl.textContent = "00:00";
+    startStopBtn.textContent = "Iniciar";
+    nextStepIndex = 0;
+    messageEl.textContent = "";
+    steps.forEach(s=>s.element.classList.remove("done","current"));
+  }
+
+  startStopBtn.addEventListener("click", () => running ? stopTimer() : startTimer());
+  resetBtn.addEventListener("click", resetTimer);
+</script>
+
+</body>
+</html>
